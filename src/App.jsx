@@ -6,6 +6,7 @@ import { CookiesProvider, useCookies } from 'react-cookie';
 import Register from './pages/register';
 import Dashboard from './pages/dashboard';
 import ResetPassword from './pages/reset-password';
+import NewNotes from './pages/new-notes';
 
 function App() {
     return (
@@ -18,6 +19,14 @@ function App() {
                             element={
                                 <PrivateRoute>
                                     <Dashboard />
+                                </PrivateRoute>
+                            }
+                        />{' '}
+                        <Route
+                            path='/new-notes'
+                            element={
+                                <PrivateRoute>
+                                    <NewNotes />
                                 </PrivateRoute>
                             }
                         />
