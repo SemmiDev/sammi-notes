@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Navbar from '../components/navbar';
-import Spinner, { EyeCloseIcon, EyeOpenIcon } from '../components/icons';
+import { SpinnerIcon, EyeCloseIcon, EyeOpenIcon } from '../components/icons';
 import MainLayout from '../layouts/main';
 import {
     validateConfirmPassword,
@@ -13,6 +13,9 @@ import { useAuth } from '../contexts/auth';
 import { useNavigate } from 'react-router-dom';
 
 export default function Register() {
+    const { cookies, signUp, signInWithGoogle } = useAuth();
+    const navigate = useNavigate();
+
     const [isLoading, setIsLoading] = useState(false);
     const [enableSubmitButton, setEnableSubmitButton] = useState(false);
     const [errorMessage, setErrorMessage] = useState({
@@ -32,18 +35,18 @@ export default function Register() {
         return true;
     };
 
-    const [isProcessed, setIsProcessed] = useState(false);
+    const [hasProcessed, setHasProcessed] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-
-    const [fullName, setFullName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
 
     const fullNameRef = useRef(null);
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
     const confirmPasswordRef = useRef(null);
+
+    const [fullName, setFullName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
 
     const clearErrorMessage = () => {
         setErrorMessage({
@@ -60,44 +63,42 @@ export default function Register() {
         confirmPasswordRef.current.style.border = '2px solid black';
     };
 
-    const { cookies, signUp, signInWithGoogle } = useAuth();
-    const navigate = useNavigate();
-
     const handleRegister = async (e) => {
         e.preventDefault();
+
+        // the process is started
         clearErrorMessage();
         setIsLoading(true);
 
+        // processing
         const { error } = await signUp(
             { email, password },
             { data: { full_name: fullName } }
         );
 
-        setIsProcessed(true);
+        // the process is done
+        setHasProcessed(true);
         setIsLoading(false);
 
-        if (error) {
-            setErrorMessage(() => ({
-                registerProcess: error.message,
-            }));
-        } else {
+        // if error occured, set and show error message
+        if (error) setErrorMessage(() => ({ registerProcess: error.message }));
+        // if no error occured, show success message
+        else
             setErrorMessage(() => ({
                 registerProcess:
                     'Register success, please check your email to confirm',
             }));
-        }
     };
 
+    // if user is already logged in, redirect to home page
     useEffect(() => {
         if (cookies.auth) navigate('/');
     }, []);
 
     // use effect for check if errorMessages is empty
     useEffect(() => {
-        const isEmpty = isEmptyErrorMessage({ errorMessage });
-        if (isEmpty) {
-            setEnableSubmitButton(true);
-        }
+        const isEmptyErrorMessageCheck = isEmptyErrorMessage({ errorMessage });
+        if (isEmptyErrorMessageCheck) setEnableSubmitButton(true);
     }, [errorMessage]);
 
     return (
@@ -107,7 +108,7 @@ export default function Register() {
                 <div className='p-8 bg-[#f9e1fa] w-[300px] md:w-[350px] border-2 border-black mx-auto rounded-xl'>
                     <div className='mb-4'>
                         <h3 className='font-semibold text-2xl text-black'>
-                            Sign Up{' '}
+                            Sign Up
                         </h3>
                         <p className='hover:text-purple-500 text-black'>
                             Create an account to get started.
@@ -128,7 +129,7 @@ export default function Register() {
                                         </span>
                                     </label>
                                     <input
-                                        className=' w-full text-black bg-transparent px-3 py-2 border-2  border-black  rounded-lg focus:outline-none hover:shadow hover:shadow-black focus:shadow-black'
+                                        className=' w-full text-black bg-transparent px-3 py-2 border-2  border-black  rounded-lg focus:outline-none hover:shadow hover:shadow-black focus:shadow-black active:shadow-black'
                                         type='text'
                                         id={'fullName'}
                                         placeholder='Sammi Aldhi Yanto'
@@ -171,7 +172,7 @@ export default function Register() {
                                         </span>
                                     </label>
                                     <input
-                                        className=' w-full text-black bg-transparent px-3 py-2 border-2  border-black  rounded-lg focus:outline-none hover:shadow hover:shadow-black focus:shadow-black'
+                                        className=' w-full text-black bg-transparent px-3 py-2 border-2  border-black  rounded-lg focus:outline-none hover:shadow hover:shadow-black focus:shadow-black active:shadow-black'
                                         type='email'
                                         id={'email'}
                                         placeholder='sammi@gmail.com'
@@ -211,7 +212,7 @@ export default function Register() {
                                     </label>
                                     <div className='relative'>
                                         <input
-                                            className=' w-full text-black bg-transparent px-3 py-2 border-2  border-black  rounded-lg focus:outline-none hover:shadow hover:shadow-black focus:shadow-black'
+                                            className=' w-full text-black bg-transparent px-3 py-2 border-2  border-black  rounded-lg focus:outline-none hover:shadow hover:shadow-black focus:shadow-black active:shadow-black'
                                             type={
                                                 showPassword
                                                     ? 'text'
@@ -270,7 +271,7 @@ export default function Register() {
                                     </label>
                                     <div className='relative'>
                                         <input
-                                            className=' w-full text-black bg-transparent px-3 py-2 border-2  border-black  rounded-lg focus:outline-none hover:shadow hover:shadow-black focus:shadow-black'
+                                            className=' w-full text-black bg-transparent px-3 py-2 border-2  border-black  rounded-lg focus:outline-none hover:shadow hover:shadow-black focus:shadow-black active:shadow-black'
                                             type={
                                                 showPassword
                                                     ? 'text'
@@ -323,13 +324,13 @@ export default function Register() {
                                     </div>
                                 </div>
                                 <div className='flex flex-col gap-3'>
-                                    {isProcessed ? (
+                                    {hasProcessed ? (
                                         <p className='text-xs md:text-sm text-center text-purple-900'>
                                             {errorMessage.registerProcess}
                                         </p>
                                     ) : isLoading ? (
                                         <button className='w-full flex justify-center hover:shadow hover:shadow-black bg-tranparent p-2  border-2 border-black rounded-lg bg-purple-500 text-white tracking-wide font-bold shadow-sm cursor-pointer transition ease-in duration-100'>
-                                            <Spinner />
+                                            <SpinnerIcon />
                                         </button>
                                     ) : (
                                         <button

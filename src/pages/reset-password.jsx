@@ -1,16 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import Navbar from '../components/navbar';
-import Spinner from '../components/icons';
+import { SpinnerIcon } from '../components/icons';
 import MainLayout from '../layouts/main';
-import { validateEmail } from '../utils/validation';
+import { validateEmail, validatePassword } from '../utils/validation';
 import { supabase } from '../services/supabase';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth';
 
 export default function ResetPassword() {
-    const { signOut } = useAuth();
+    const { signOut, resetPasswordForEmail } = useAuth();
+
     const [isLoading, setIsLoading] = useState(false);
-    const [disableSubmitButton, setdisableSubmitButton] = useState(false);
     const [email, setEmail] = useState('');
     const emailRef = useRef(null);
 
@@ -22,49 +21,50 @@ export default function ResetPassword() {
     const handleResetPassword = async (e) => {
         e.preventDefault();
         setIsLoading(true);
-        setdisableSubmitButton(true);
 
-        const { data, error } = await supabase.auth.resetPasswordForEmail(
-            email,
-            {
-                redirectTo: 'https://sammi-notes.vercel.app/reset-password',
-            }
-        );
+        const error = await resetPasswordForEmail({ email });
         if (error) {
             setErrorMessage({
-                ...errorMessage,
                 resetMsg: error.message,
             });
-        }
-        if (data) {
+        } else {
             setErrorMessage({
-                ...errorMessage,
                 resetMsg:
                     'Check your email for the link to reset your password.',
             });
         }
 
         setIsLoading(false);
-        setdisableSubmitButton(false);
     };
 
     /**
-     * Step 2: Once the user is redirected back to your application,
+     * SOnce the user is redirected back to your application,
      * ask the user to reset their password.
      */
     useEffect(() => {
         supabase.auth.onAuthStateChange(async (event, session) => {
             if (event == 'PASSWORD_RECOVERY') {
-                const newPassword = prompt(
-                    'What would you like your new password to be?'
-                );
+                let newPassword = '';
+                let valid = false;
+                while (!valid) {
+                    newPassword = prompt(
+                        'New passsword (Min 8, UPPER/lowercase and numbers)'
+                    );
+                    // validate password
+                    const { message, error } = validatePassword(newPassword);
+                    if (error) {
+                        alert(message);
+                    } else {
+                        valid = true;
+                    }
+                }
+
                 const { data, error } = await supabase.auth.updateUser({
                     password: newPassword,
                 });
 
                 if (data) alert('Password updated successfully!');
                 if (error) alert('There was an error updating your password.');
-
                 signOut();
             }
         });
@@ -104,6 +104,7 @@ export default function ResetPassword() {
                                         id={'email'}
                                         placeholder='sammi@gmail.com'
                                         required={true}
+                                        autoFocus={true}
                                         value={email}
                                         ref={emailRef}
                                         onInput={(e) => {
@@ -136,11 +137,10 @@ export default function ResetPassword() {
 
                                     {isLoading ? (
                                         <button className='w-full flex justify-center hover:shadow hover:shadow-black bg-tranparent p-2  border-2 border-black rounded-lg bg-purple-500 text-white tracking-wide font-bold shadow-sm cursor-pointer transition ease-in duration-100'>
-                                            <Spinner />
+                                            <SpinnerIcon />
                                         </button>
                                     ) : (
                                         <button
-                                            disabled={disableSubmitButton}
                                             type='submit'
                                             className='w-full flex justify-center hover:shadow hover:shadow-black bg-tranparent p-2 border-2 border-black rounded-lg bg-purple-500 text-white tracking-wide font-bold shadow-sm cursor-pointer transition ease-in duration-100'
                                         >

@@ -1,10 +1,14 @@
-import React from 'react';
-import { Navigate } from 'react-router-dom';
-
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/auth';
 
-export function PrivateRoute({ children }) {
+export const PrivateRoute = ({ children }) => {
+    const navigate = useNavigate();
     const { cookies } = useAuth();
-    if (!cookies.auth) return <Navigate to='/login' replace={true} />;
+
+    useEffect(() => {
+        if (!cookies.auth) navigate('/login');
+    }, []);
+
     return children;
-}
+};

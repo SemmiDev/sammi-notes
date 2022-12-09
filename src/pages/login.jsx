@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import Navbar from '../components/navbar';
-import Spinner, { EyeCloseIcon, EyeOpenIcon } from '../components/icons';
+import { SpinnerIcon, EyeCloseIcon, EyeOpenIcon } from '../components/icons';
 import MainLayout from '../layouts/main';
 import { validateEmail, validatePassword } from '../utils/validation';
 
@@ -8,6 +8,9 @@ import { useAuth } from '../contexts/auth';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
+    const { cookies, signInWithEmailPassword, signInWithGoogle } = useAuth();
+    const navigate = useNavigate();
+
     const [isLoading, setIsLoading] = useState(false);
     const [enableSubmitButton, setEnableSubmitButton] = useState(false);
     const [errorMessage, setErrorMessage] = useState({
@@ -28,11 +31,11 @@ export default function Login() {
     const [isProcessed, setIsProcessed] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
+
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
 
     const clearErrorMessage = () => {
         setErrorMessage({
@@ -45,11 +48,9 @@ export default function Login() {
         passwordRef.current.style.border = '2px solid black';
     };
 
-    const { cookies, signInWithEmailPassword, signInWithGoogle } = useAuth();
-    const navigate = useNavigate();
-
     const handleLogin = async (e) => {
         e.preventDefault();
+
         clearErrorMessage();
         setIsLoading(true);
 
@@ -76,9 +77,7 @@ export default function Login() {
     // use effect for check if errorMessages is empty
     useEffect(() => {
         const isEmpty = isEmptyErrorMessage({ errorMessage });
-        if (isEmpty) {
-            setEnableSubmitButton(true);
-        }
+        if (isEmpty) setEnableSubmitButton(true);
     }, [errorMessage]);
 
     return (
@@ -114,6 +113,7 @@ export default function Login() {
                                         id={'email'}
                                         placeholder='sammi@gmail.com'
                                         required={true}
+                                        autoFocus={true}
                                         value={email}
                                         ref={emailRef}
                                         onInput={(e) => {
@@ -228,7 +228,7 @@ export default function Login() {
                                         </p>
                                     ) : isLoading ? (
                                         <button className='w-full flex justify-center hover:shadow hover:shadow-black bg-tranparent p-2  border-2 border-black rounded-lg bg-purple-500 text-white tracking-wide font-bold shadow-sm cursor-pointer transition ease-in duration-100'>
-                                            <Spinner />
+                                            <SpinnerIcon />
                                         </button>
                                     ) : (
                                         <button

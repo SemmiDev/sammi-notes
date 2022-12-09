@@ -9,7 +9,7 @@ export default function Dashboard() {
         <MainLayout>
             <Navbar />
             <h1 className='text-black m-5 font-bold text-xl'>
-                Welcome {cookies.auth.email}
+                Welcome {cookies.auth?.email}
             </h1>
         </MainLayout>
     );

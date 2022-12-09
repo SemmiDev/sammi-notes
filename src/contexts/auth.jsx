@@ -2,46 +2,45 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../services/supabase';
 import { useCookies } from 'react-cookie';
 import { useNavigate } from 'react-router-dom';
+import { redirectResetPasswordUrl } from '../services/env';
 
 const AuthContext = createContext();
+export const useAuth = () => useContext(AuthContext);
 
-export function useAuth() {
-    return useContext(AuthContext);
-}
-
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
+
     const [loading, setLoading] = useState(true);
     const [cookies, setCookie] = useCookies(['auth']);
 
-    function handleCookie({ name, value, expires_at }) {
+    const handleSetCookie = ({ name, value, expires_at }) => {
         setCookie(name, value, {
             path: '/',
             maxAge: expires_at,
             sameSite: 'lax',
         });
-    }
+    };
 
-    function signOut() {
-        setCookie('auth', null, {
-            path: '/',
-            maxAge: 0,
-            sameSite: 'lax',
+    const signOut = async () => {
+        handleSetCookie({
+            name: 'auth',
+            value: '',
+            expires_at: 0,
         });
 
-        supabase.auth.signOut().then(() => {
-            navigate('/');
+        await supabase.auth.signOut().then(() => {
+            navigate('/login');
         });
-    }
+    };
 
     // https://supabase.com/docs/guides/auth/auth-google
-    async function signInWithGoogle() {
+    const signInWithGoogle = async () => {
         const { data, error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
         });
 
         if (!error) {
-            handleCookie({
+            handleSetCookie({
                 name: 'auth',
                 value: JSON.stringify({
                     id: data.user.id,
@@ -52,26 +51,27 @@ export function AuthProvider({ children }) {
                 }),
                 expires_at: data.expires_at,
             });
+        } else {
+            // if there is an error, redirect to login page to try again
+            navigate('/login');
         }
-
-        // using window
         navigate('/');
-    }
+    };
+
+    const resetPasswordForEmail = async ({ email }) => {
+        // const { data, error } = await supabase.auth.resetPasswordForEmail(
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: redirectResetPasswordUrl + '/reset-password',
+        });
+        return error;
+    };
 
     useEffect(() => {
-        // Check active sessions and sets the user
-        const session = supabase.auth.getSession();
-
-        // setUser(session.user ?? null); // If there is a user, set it, otherwise set it to null
-        setLoading(false);
-
         // Listen for changes on auth state (logged in, signed out, etc.)
         const { data } = supabase.auth.onAuthStateChange(
             async (event, session) => {
-                // setUser(session.user ?? null); // If there is a user, set it, otherwise set it to null);
-
                 if (session.user) {
-                    handleCookie({
+                    handleSetCookie({
                         name: 'auth',
                         value: JSON.stringify({
                             id: session.user.id,
@@ -83,9 +83,10 @@ export function AuthProvider({ children }) {
                         expires_at: session.expires_at,
                     });
                 }
-                setLoading(false);
             }
         );
+
+        setLoading(false);
 
         return () => {
             data.subscription.unsubscribe();
@@ -98,6 +99,7 @@ export function AuthProvider({ children }) {
         signInWithEmailPassword: (data) =>
             supabase.auth.signInWithPassword(data),
         signInWithGoogle,
+        resetPasswordForEmail,
         signOut,
         cookies,
     };
@@ -107,4 +109,4 @@ export function AuthProvider({ children }) {
             {!loading && children}
         </AuthContext.Provider>
     );
-}
+};
