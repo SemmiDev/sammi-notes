@@ -53,6 +53,9 @@ export function AuthProvider({ children }) {
                 expires_at: data.expires_at,
             });
         }
+
+        // using window
+        navigate('/');
     }
 
     useEffect(() => {

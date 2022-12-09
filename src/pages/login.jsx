@@ -71,7 +71,7 @@ export default function Login() {
 
     useEffect(() => {
         if (cookies.auth) navigate('/');
-    }, []);
+    });
 
     // use effect for check if errorMessages is empty
     useEffect(() => {
