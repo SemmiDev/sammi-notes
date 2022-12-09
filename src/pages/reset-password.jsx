@@ -27,7 +27,7 @@ export default function ResetPassword() {
         const { data, error } = await supabase.auth.resetPasswordForEmail(
             email,
             {
-                redirectTo: 'http://localhost:5173/reset-password',
+                redirectTo: 'https://sammi-notes.vercel.app/reset-password',
             }
         );
         if (error) {
