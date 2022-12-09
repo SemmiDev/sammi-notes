@@ -1,0 +1,7 @@
+/* font from google fonts */
+@import url('https://fonts.googleapis.com/css2?family=GFS+Neohellenic:wght@400;700&display=swap');
+
+/*  all content using font */
+body {
+    font-family: 'GFS Neohellenic', sans-serif;
+}
