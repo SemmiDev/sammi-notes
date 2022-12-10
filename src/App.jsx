@@ -7,6 +7,7 @@ import Register from './pages/register';
 import Dashboard from './pages/dashboard';
 import ResetPassword from './pages/reset-password';
 import NewNotes from './pages/new-notes';
+import NotesDetails from './pages/notes-details';
 
 function App() {
     return (
@@ -25,9 +26,17 @@ function App() {
                         <Route
                             path='/new-notes'
                             element={
-                                <PrivateRoute>
-                                    <NewNotes />
-                                </PrivateRoute>
+                                // <PrivateRoute>
+                                <NewNotes />
+                                // </PrivateRoute>
+                            }
+                        />
+                        <Route
+                            path='/notes-details'
+                            element={
+                                // <PrivateRoute>
+                                <NotesDetails />
+                                // </PrivateRoute>
                             }
                         />
                         <Route path='login' element={<Login />} />

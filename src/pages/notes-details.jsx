@@ -1,19 +1,40 @@
 import MDEditor from '@uiw/react-md-editor';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Navbar from '../components/navbar';
 import { useAuth } from '../contexts/auth';
 import MainLayout from '../layouts/main';
-import { saveNotes } from '../services/notes';
+import { findNotesByIDAndUserID, updateNotes } from '../services/notes';
 
-export default function NewNotes() {
+export default function NotesDetails() {
     const { cookies, signOut } = useAuth();
     const navigate = useNavigate();
+    let [searchParam, setSearchParam] = useSearchParams();
 
+    const [noteId, setNoteId] = useState('');
     const [title, setTitle] = useState('');
-    const [value, setValue] = useState('what is up?');
+    const [value, setValue] = useState('');
 
-    const handleSaveNote = async () => {
+    useEffect(() => {
+        const noteId = searchParam.get('id');
+        const userId = cookies.auth?.id;
+
+        if (!noteId || !userId) {
+            navigate('/dashboard');
+        }
+
+        setNoteId(noteId);
+        const noteDetails = async () => {
+            const note = await findNotesByIDAndUserID(noteId, userId);
+            if (note.success) {
+                setTitle(note.data.title);
+                setValue(note.data.body);
+            }
+        };
+        noteDetails();
+    }, []);
+
+    const handleUpdateNote = async () => {
         const id = cookies.auth?.id;
         if (!id) {
             signOut();
@@ -30,7 +51,8 @@ export default function NewNotes() {
             alert('Please enter content');
             return;
         }
-        const error = await saveNotes({
+        const error = await updateNotes({
+            id: noteId,
             user_id: id,
             title: title,
             body: value,
@@ -56,17 +78,17 @@ export default function NewNotes() {
                         className='bg-slate-900 text-white px-3 shadow-md rounded-lg mx-auto max-w-lg '
                     />
                     <button
-                        onClick={handleSaveNote}
+                        onClick={handleUpdateNote}
                         className='btn btn-sm text-xs btn-primary'
                     >
-                        Save Note
+                        Update Note
                     </button>
                 </div>
                 <div className='w-[300px] md:w-[600px] lg:w-[800px] xl:w-[1000px] 2xl:w-[1200px]'>
                     <MDEditor
                         className='bg-slate-900 shadow-md rounded-b-lg shadow-black mx-auto max-w-2xl h-96 w-full mt-8'
                         value={value}
-                        preview={'edit'}
+                        preview={'preview'}
                         height={400}
                         onChange={setValue}
                     />
