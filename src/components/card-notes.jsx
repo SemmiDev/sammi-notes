@@ -1,36 +1,38 @@
-import { formatDate } from '../utils/format';
+import { formatDate, limitChar, removeMarkdown } from '../utils/format';
 
-const limitChar = (str, limit) => {
-    const newStr = [];
-    if (str.length > limit) {
-        str.split(' ').reduce((acc, cur) => {
-            if (acc + cur.length <= limit) {
-                newStr.push(cur);
-            }
-            return acc + cur.length;
-        }, 0);
-        return `${newStr.join(' ')} ...`;
-    }
-    return str;
-};
-
-export const CardNotes = ({ id, title, body, updated_at }) => {
+export const CardNotes = ({
+    id,
+    title,
+    body,
+    updated_at,
+    tags,
+    setTagFilter,
+}) => {
     return (
         <div className='card w-72 bg-transparent text-black border-1 border-black shadow-xl hover:shadow-2xl'>
             <div className='card-body'>
                 <p className='text-xs mb-2 text-left text-secondary italic'>
                     {formatDate(updated_at)}
                 </p>
-                <hr className='mb-2 border-1 border-black/20' />
-                <h2 className='card-title'>{title}</h2>
-                <p>{limitChar(body, 20)}</p>
-                <div className='card-actions justify-end'>
-                    <a
-                        href={`notes-details?id=${id}`}
-                        className='btn btn-sm btn-secondary'
-                    >
-                        Read
-                    </a>
+                <a
+                    href={`notes-details?id=${id}`}
+                    className='card-title hover:text-primary'
+                >
+                    {title}
+                </a>
+                <p>{limitChar(removeMarkdown(body), 20)}</p>
+                <div className='card-actions justify-between items-center mt-5'>
+                    <div className='flex flex-wrap gap-2'>
+                        {tags.map((tag) => (
+                            <span
+                                key={tag.id}
+                                onClick={() => setTagFilter(tag.name)}
+                                className='badge badge-outline hover:bg-info transition-all duration-300 hover:cursor-pointer'
+                            >
+                                {tag.name}
+                            </span>
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>

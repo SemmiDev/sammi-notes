@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { redirectResetPasswordUrl } from '../services/env';
 
 const AuthContext = createContext();
+
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
@@ -12,6 +13,9 @@ export const AuthProvider = ({ children }) => {
 
     const [loading, setLoading] = useState(true);
     const [cookies, setCookie] = useCookies(['auth']);
+
+    // get auth from cookies and store it in state
+    const [authSession, setAuthSession] = useState(cookies.auth);
 
     const handleSetCookie = ({ name, value, expires_at }) => {
         setCookie(name, value, {
@@ -27,6 +31,8 @@ export const AuthProvider = ({ children }) => {
             value: '',
             expires_at: 0,
         });
+
+        setAuthSession(null);
 
         await supabase.auth.signOut().then(() => {
             navigate('/login');
@@ -51,6 +57,14 @@ export const AuthProvider = ({ children }) => {
                 }),
                 expires_at: data.expires_at,
             });
+
+            setAuthSession({
+                id: data.user.id,
+                email: data.user.email,
+                access_token: data.access_token,
+                refresh_token: data.refresh_token,
+                is_logged_in: true,
+            });
         } else {
             // if there is an error, redirect to login page to try again
             navigate('/login');
@@ -61,7 +75,6 @@ export const AuthProvider = ({ children }) => {
     const resetPasswordForEmail = async ({ email }) => {
         // const { data, error } = await supabase.auth.resetPasswordForEmail(
         const redirectTo = redirectResetPasswordUrl + '/reset-password';
-        console.log(redirectTo);
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: redirectTo,
         });
@@ -84,6 +97,13 @@ export const AuthProvider = ({ children }) => {
                         }),
                         expires_at: session.expires_at,
                     });
+                    setAuthSession({
+                        id: session.user.id,
+                        email: session.user.email,
+                        access_token: session.access_token,
+                        refresh_token: session.refresh_token,
+                        is_logged_in: true,
+                    });
                 }
             }
         );
@@ -104,6 +124,7 @@ export const AuthProvider = ({ children }) => {
         resetPasswordForEmail,
         signOut,
         cookies,
+        authSession,
     };
 
     return (

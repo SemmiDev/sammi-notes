@@ -1,6 +1,10 @@
 ## Schema
 
 ```sql
+DROP TABLE IF EXISTS note_tags CASCADE;
+DROP TABLE IF EXISTS tags CASCADE;
+DROP TABLE IF EXISTS notes CASCADE;
+
 CREATE TABLE notes (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL,
@@ -11,16 +15,16 @@ CREATE TABLE notes (
     FOREIGN KEY (user_id) REFERENCES auth.users(id)
 );
 
--- CREATE TABLE tags (
---     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
---     name TEXT NOT NULL
--- );
+CREATE TABLE tags (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL
+);
 
--- CREATE TABLE note_tags (
---     note_id UUID,
---     tag_id UUID,
---     PRIMARY KEY (note_id, tag_id),
---     FOREIGN KEY (note_id) REFERENCES notes(id),
---     FOREIGN KEY (tag_id) REFERENCES tags(id)
--- );
+CREATE TABLE note_tags (
+    note_id UUID,
+    tag_id UUID,
+    PRIMARY KEY (note_id, tag_id),
+    FOREIGN KEY (note_id) REFERENCES notes(id),
+    FOREIGN KEY (tag_id) REFERENCES tags(id)
+);
 ```

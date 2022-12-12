@@ -4,10 +4,11 @@ import { useAuth } from '../contexts/auth';
 
 export const PrivateRoute = ({ children }) => {
     const navigate = useNavigate();
-    const { cookies } = useAuth();
+    const { authSession } = useAuth();
 
     useEffect(() => {
-        if (!cookies.auth) navigate('/login');
+        const userId = authSession?.id;
+        if (!userId) navigate('/login');
     }, []);
 
     return children;

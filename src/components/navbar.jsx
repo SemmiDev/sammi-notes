@@ -1,7 +1,7 @@
 import { useAuth } from '../contexts/auth';
 
 export default function Navbar({ active }) {
-    const { cookies, signOut } = useAuth();
+    const { signOut, authSession } = useAuth();
 
     return (
         <div className='navbar bg-[#fefffe] border border-b-2 border-black  px-12 md:px-16 lg:px-36 text-black'>
@@ -21,10 +21,11 @@ export default function Navbar({ active }) {
                     </div>
                 </a>
             </div>
+
             <div className='flex-none'>
                 <ul className='menu menu-horizontal p-0'>
                     <li>
-                        {!cookies.auth ? (
+                        {!authSession?.id ? (
                             <a
                                 href={
                                     active == 'sign-in' ? '/register' : '/login'
